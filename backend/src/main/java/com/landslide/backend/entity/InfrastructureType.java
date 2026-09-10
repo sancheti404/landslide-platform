@@ -1,12 +1,11 @@
 package com.landslide.backend.entity;
 
 public enum InfrastructureType {
+
     ROAD,
+    HOSPITAL,
+    SCHOOL,
     BRIDGE,
-    BUILDING,
-    POWER_LINE,
-    PIPELINE,
-    DAM,
-    COMMUNICATION_TOWER,
-    OTHER
+    POLICE_STATION,
+    SHELTER
 }

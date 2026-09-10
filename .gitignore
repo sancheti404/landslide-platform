@@ -53,3 +53,9 @@ venv/
 *.joblib
 datasets/
 data/
+
+
+# Local configurations & secrets
+**/application-local.properties
+**/application-*.properties
+!**/application.properties

@@ -15,13 +15,13 @@ public class CreateInfrastructureRequest {
     private InfrastructureType type;
 
     @NotNull(message = "Latitude is required")
-    @DecimalMin(value = "-90.0", message = "Latitude must be >= -90.0")
-    @DecimalMax(value = "90.0", message = "Latitude must be <= 90.0")
+    @DecimalMin(value = "-90.0", message = "Latitude must be at least -90")
+    @DecimalMax(value = "90.0", message = "Latitude must be at most 90")
     private Double latitude;
 
     @NotNull(message = "Longitude is required")
-    @DecimalMin(value = "-180.0", message = "Longitude must be >= -180.0")
-    @DecimalMax(value = "180.0", message = "Longitude must be <= 180.0")
+    @DecimalMin(value = "-180.0", message = "Longitude must be at least -180")
+    @DecimalMax(value = "180.0", message = "Longitude must be at most 180")
     private Double longitude;
 
     private String description;

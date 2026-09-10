@@ -2,7 +2,6 @@ package com.landslide.backend.controller;
 
 import com.landslide.backend.dto.CreateInfrastructureRequest;
 import com.landslide.backend.dto.InfrastructureResponse;
-import com.landslide.backend.entity.InfrastructureType;
 import com.landslide.backend.service.InfrastructureService;
 
 import jakarta.validation.Valid;
@@ -18,46 +17,39 @@ public class InfrastructureController {
 
     private final InfrastructureService infrastructureService;
 
-    public InfrastructureController(InfrastructureService infrastructureService) {
+    public InfrastructureController(
+            InfrastructureService infrastructureService
+    ) {
         this.infrastructureService = infrastructureService;
     }
 
+    // CREATE
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public InfrastructureResponse createInfrastructure(
             @Valid @RequestBody CreateInfrastructureRequest request
     ) {
-        return infrastructureService.createInfrastructure(request);
+        return infrastructureService
+                .createInfrastructure(request);
     }
 
+    // GET ALL
     @GetMapping
     public List<InfrastructureResponse> getAllInfrastructure() {
-        return infrastructureService.getAllInfrastructure();
+        return infrastructureService
+                .getAllInfrastructure();
     }
 
+    // GET BY ID
     @GetMapping("/{id}")
     public InfrastructureResponse getInfrastructureById(
             @PathVariable Long id
     ) {
-        return infrastructureService.getInfrastructureById(id);
+        return infrastructureService
+                .getInfrastructureById(id);
     }
 
-    @GetMapping("/type/{type}")
-    public List<InfrastructureResponse> getInfrastructureByType(
-            @PathVariable InfrastructureType type
-    ) {
-        return infrastructureService.getInfrastructureByType(type);
-    }
-
-    @GetMapping("/nearby")
-    public List<InfrastructureResponse> findNearbyInfrastructure(
-            @RequestParam Double latitude,
-            @RequestParam Double longitude,
-            @RequestParam(defaultValue = "10.0") Double distanceKm
-    ) {
-        return infrastructureService.findNearbyInfrastructure(latitude, longitude, distanceKm);
-    }
-
+    // DELETE
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteInfrastructure(

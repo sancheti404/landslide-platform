@@ -26,7 +26,10 @@ public class Infrastructure {
     @Column(nullable = false)
     private Double longitude;
 
-    @Column(columnDefinition = "geometry(Point,4326)", nullable = false)
+    @Column(
+            columnDefinition = "geometry(Point,4326)",
+            nullable = false
+    )
     private Point location;
 
     @Column(length = 2000)

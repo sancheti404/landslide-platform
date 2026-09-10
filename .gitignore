@@ -54,6 +54,30 @@ venv/
 datasets/
 data/
 
+# ML raw datasets
+ml/data/raw/*
+!ml/data/raw/.gitkeep
+
+ml/data/external/*
+!ml/data/external/.gitkeep
+
+# Processed datasets
+ml/data/processed/*
+!ml/data/processed/.gitkeep
+
+# Trained ML models
+ml/models/*
+!ml/models/.gitkeep
+
+# Python environment
+ml/.venv/
+ml/venv/
+__pycache__/
+*.pyc
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
 
 # Local configurations & secrets
 **/application-local.properties

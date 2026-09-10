@@ -31,4 +31,8 @@ public interface InfrastructureRepository
             @Param("distance") Double distance,
             @Param("type") String type
     );
+
+    @Query("SELECT i.type, COUNT(i) FROM Infrastructure i GROUP BY i.type")
+    List<Object[]> countInfrastructureByType();
 }
+

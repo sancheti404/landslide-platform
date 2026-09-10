@@ -6,6 +6,9 @@ import com.landslide.backend.dto.RiskZoneResponse;
 import com.landslide.backend.dto.UpdateRiskZoneRequest;
 import com.landslide.backend.service.RiskZoneService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -19,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/risk-zones")
 @Validated
+@Tag(name = "Risk Zones", description = "Endpoints for managing risk zones, polygon boundary validation, overlap detection, and point-in-polygon queries")
 public class RiskZoneController {
 
     private final RiskZoneService riskZoneService;
@@ -32,6 +36,7 @@ public class RiskZoneController {
     // CREATE RISK ZONE
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create Risk Zone", description = "Creates a new risk zone with boundary polygon, validating SRID 4326 and checking for spatial overlap with existing risk zones.")
     public RiskZoneResponse createRiskZone(
             @Valid @RequestBody CreateRiskZoneRequest request
     ) {
@@ -40,15 +45,17 @@ public class RiskZoneController {
 
     // GET ALL RISK ZONES
     @GetMapping
+    @Operation(summary = "Get All Risk Zones", description = "Retrieves all risk zones registered in the system.")
     public List<RiskZoneResponse> getAllRiskZones() {
         return riskZoneService.getAllRiskZones();
     }
 
     // CONTAINS POINT
     @GetMapping("/contains")
+    @Operation(summary = "Find Risk Zones Containing Point", description = "Finds all risk zones that spatially contain the specified coordinate.")
     public List<RiskZoneResponse> findRiskZonesContainingPoint(
-            @RequestParam Double latitude,
-            @RequestParam Double longitude
+            @Parameter(description = "Latitude (-90 to 90)") @RequestParam Double latitude,
+            @Parameter(description = "Longitude (-180 to 180)") @RequestParam Double longitude
     ) {
         return riskZoneService
                 .findRiskZonesContainingPoint(latitude, longitude);
@@ -56,12 +63,15 @@ public class RiskZoneController {
 
     // LOCATE POINT IN RISK ZONE (Must be before /{id})
     @GetMapping("/locate")
+    @Operation(summary = "Locate Point in Risk Zone", description = "Checks whether a point lies inside a risk zone and returns details of the assigned zone or insideRiskZone=false if unassigned.")
     public RiskZoneLocationResponse locatePoint(
+            @Parameter(description = "Latitude (-90 to 90)")
             @RequestParam
             @DecimalMin(value = "-90.0", message = "Latitude must be at least -90")
             @DecimalMax(value = "90.0", message = "Latitude must be at most 90")
             Double latitude,
 
+            @Parameter(description = "Longitude (-180 to 180)")
             @RequestParam
             @DecimalMin(value = "-180.0", message = "Longitude must be at least -180")
             @DecimalMax(value = "180.0", message = "Longitude must be at most 180")
@@ -72,6 +82,7 @@ public class RiskZoneController {
 
     // UPDATE RISK ZONE
     @PutMapping("/{id}")
+    @Operation(summary = "Update Risk Zone", description = "Updates an existing risk zone's properties or boundary, re-verifying spatial overlap exclusions.")
     public RiskZoneResponse updateRiskZone(
             @PathVariable Long id,
             @Valid @RequestBody UpdateRiskZoneRequest request
@@ -81,6 +92,7 @@ public class RiskZoneController {
 
     // GET RISK ZONE BY ID
     @GetMapping("/{id}")
+    @Operation(summary = "Get Risk Zone by ID", description = "Retrieves details of a single risk zone by its ID.")
     public RiskZoneResponse getRiskZoneById(
             @PathVariable Long id
     ) {
@@ -90,6 +102,7 @@ public class RiskZoneController {
     // DELETE RISK ZONE
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete Risk Zone", description = "Deletes a risk zone by ID and detaches associated landslide events.")
     public void deleteRiskZone(
             @PathVariable Long id
     ) {

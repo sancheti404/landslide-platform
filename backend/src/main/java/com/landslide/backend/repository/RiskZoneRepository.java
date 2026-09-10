@@ -52,4 +52,8 @@ public interface RiskZoneRepository extends JpaRepository<RiskZone, Long> {
             @Param("boundaryWkt") String boundaryWkt,
             @Param("currentId") Long currentId
     );
+
+    @Query("SELECT r.riskLevel, COUNT(r) FROM RiskZone r GROUP BY r.riskLevel")
+    List<Object[]> countRiskZonesByRiskLevel();
 }
+

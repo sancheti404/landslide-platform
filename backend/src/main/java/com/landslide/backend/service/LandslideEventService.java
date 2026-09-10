@@ -8,11 +8,15 @@ import com.landslide.backend.entity.RiskZone;
 import com.landslide.backend.exception.ResourceNotFoundException;
 import com.landslide.backend.repository.LandslideEventRepository;
 import com.landslide.backend.repository.RiskZoneRepository;
+import jakarta.persistence.criteria.Predicate;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -71,6 +75,75 @@ public class LandslideEventService {
     public List<LandslideEventResponse> getAllEvents() {
         return landslideEventRepository
                 .findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<LandslideEventResponse> filterEvents(
+            String severity,
+            String status,
+            RiskLevel riskLevel,
+            Long riskZoneId,
+            LocalDateTime occurredFrom,
+            LocalDateTime occurredTo
+    ) {
+        if (occurredFrom != null && occurredTo != null && occurredFrom.isAfter(occurredTo)) {
+            throw new IllegalArgumentException("occurredFrom cannot be after occurredTo");
+        }
+
+        Specification<LandslideEvent> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (severity != null && !severity.isBlank()) {
+                predicates.add(criteriaBuilder.equal(root.get("severity"), severity));
+            }
+
+            if (status != null && !status.isBlank()) {
+                predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            if (riskLevel != null) {
+                predicates.add(criteriaBuilder.equal(root.get("riskZone").get("riskLevel"), riskLevel));
+            }
+
+            if (riskZoneId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("riskZone").get("id"), riskZoneId));
+            }
+
+            if (occurredFrom != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("occurredAt"), occurredFrom));
+            }
+
+            if (occurredTo != null) {
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("occurredAt"), occurredTo));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return landslideEventRepository.findAll(spec)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public List<LandslideEventResponse> findNearbyLandslides(
+            Double latitude,
+            Double longitude,
+            Double distance
+    ) {
+        if (latitude == null || latitude < -90.0 || latitude > 90.0) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90");
+        }
+        if (longitude == null || longitude < -180.0 || longitude > 180.0) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180");
+        }
+        if (distance == null || distance <= 0) {
+            throw new IllegalArgumentException("Distance must be greater than 0");
+        }
+
+        return landslideEventRepository.findNearbyLandslides(latitude, longitude, distance)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

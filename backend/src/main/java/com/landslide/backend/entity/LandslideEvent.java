@@ -1,6 +1,7 @@
 package com.landslide.backend.entity;
 
 import jakarta.persistence.*;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,9 @@ public class LandslideEvent {
 
     @Column(nullable = false)
     private Double longitude;
+
+    @Column(columnDefinition = "geometry(Point,4326)", nullable = false)
+    private Point location;
 
     @Column(nullable = false)
     private String severity;
@@ -56,6 +60,14 @@ public class LandslideEvent {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public Point getLocation() {
+        return location;
+    }
+
+    public void setLocation(Point location) {
+        this.location = location;
     }
 
     public String getSeverity() {

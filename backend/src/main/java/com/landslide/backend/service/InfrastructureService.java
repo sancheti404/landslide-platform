@@ -83,6 +83,18 @@ public class InfrastructureService {
         return mapToResponse(infrastructure);
     }
 
+    public List<InfrastructureResponse> findNearbyInfrastructure(
+            Double latitude,
+            Double longitude,
+            Double distance
+    ) {
+        return infrastructureRepository
+                .findNearbyInfrastructure(latitude, longitude, distance)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     public void deleteInfrastructure(Long id) {
 
         Infrastructure infrastructure =

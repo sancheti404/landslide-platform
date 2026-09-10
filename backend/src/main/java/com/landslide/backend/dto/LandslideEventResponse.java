@@ -1,5 +1,7 @@
 package com.landslide.backend.dto;
 
+import com.landslide.backend.entity.RiskLevel;
+
 import java.time.LocalDateTime;
 
 public class LandslideEventResponse {
@@ -13,6 +15,10 @@ public class LandslideEventResponse {
     private LocalDateTime occurredAt;
     private LocalDateTime createdAt;
 
+    private Long riskZoneId;
+    private String riskZoneName;
+    private RiskLevel riskLevel;
+
     public LandslideEventResponse(
             Long id,
             Double latitude,
@@ -21,7 +27,10 @@ public class LandslideEventResponse {
             String status,
             String source,
             LocalDateTime occurredAt,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            Long riskZoneId,
+            String riskZoneName,
+            RiskLevel riskLevel
     ) {
         this.id = id;
         this.latitude = latitude;
@@ -31,6 +40,9 @@ public class LandslideEventResponse {
         this.source = source;
         this.occurredAt = occurredAt;
         this.createdAt = createdAt;
+        this.riskZoneId = riskZoneId;
+        this.riskZoneName = riskZoneName;
+        this.riskLevel = riskLevel;
     }
 
     public Long getId() {
@@ -63,5 +75,17 @@ public class LandslideEventResponse {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Long getRiskZoneId() {
+        return riskZoneId;
+    }
+
+    public String getRiskZoneName() {
+        return riskZoneName;
+    }
+
+    public RiskLevel getRiskLevel() {
+        return riskLevel;
     }
 }

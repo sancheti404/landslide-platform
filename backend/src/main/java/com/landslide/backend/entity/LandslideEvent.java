@@ -30,6 +30,10 @@ public class LandslideEvent {
 
     private String source;
 
+    @ManyToOne
+    @JoinColumn(name = "risk_zone_id")
+    private RiskZone riskZone;
+
     private LocalDateTime occurredAt;
 
     @Column(nullable = false, updatable = false)
@@ -92,6 +96,14 @@ public class LandslideEvent {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public RiskZone getRiskZone() {
+        return riskZone;
+    }
+
+    public void setRiskZone(RiskZone riskZone) {
+        this.riskZone = riskZone;
     }
 
     public LocalDateTime getOccurredAt() {

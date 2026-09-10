@@ -1,0 +1,55 @@
+# =========================
+# Java / Maven
+# =========================
+target/
+*.class
+*.jar
+*.war
+*.log
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Node / React
+# =========================
+node_modules/
+dist/
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+*.iml
+
+# =========================
+# Operating System
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Python / ML (Later)
+# =========================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# =========================
+# ML Models and Large Data
+# =========================
+*.pt
+*.pth
+*.pkl
+*.joblib
+datasets/
+data/

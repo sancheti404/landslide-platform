@@ -19,7 +19,7 @@ public class LandslideEvent {
     @Column(nullable = false)
     private Double longitude;
 
-    @Column(columnDefinition = "geometry(Point,4326)", nullable = false)
+    @Column(columnDefinition = "geometry(Point,4326)")
     private Point location;
 
     @Column(nullable = false)

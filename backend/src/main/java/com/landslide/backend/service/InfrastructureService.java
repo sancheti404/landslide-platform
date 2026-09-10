@@ -3,6 +3,7 @@ package com.landslide.backend.service;
 import com.landslide.backend.dto.CreateInfrastructureRequest;
 import com.landslide.backend.dto.InfrastructureResponse;
 import com.landslide.backend.entity.Infrastructure;
+import com.landslide.backend.entity.InfrastructureType;
 import com.landslide.backend.exception.ResourceNotFoundException;
 import com.landslide.backend.repository.InfrastructureRepository;
 
@@ -88,8 +89,18 @@ public class InfrastructureService {
             Double longitude,
             Double distance
     ) {
+        return findNearbyInfrastructure(latitude, longitude, distance, null);
+    }
+
+    public List<InfrastructureResponse> findNearbyInfrastructure(
+            Double latitude,
+            Double longitude,
+            Double distance,
+            InfrastructureType type
+    ) {
+        String typeStr = (type != null) ? type.name() : null;
         return infrastructureRepository
-                .findNearbyInfrastructure(latitude, longitude, distance)
+                .findNearbyInfrastructure(latitude, longitude, distance, typeStr)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

@@ -2,6 +2,7 @@ package com.landslide.backend.controller;
 
 import com.landslide.backend.dto.CreateInfrastructureRequest;
 import com.landslide.backend.dto.InfrastructureResponse;
+import com.landslide.backend.entity.InfrastructureType;
 import com.landslide.backend.service.InfrastructureService;
 
 import jakarta.validation.Valid;
@@ -60,10 +61,13 @@ public class InfrastructureController {
 
             @RequestParam
             @Positive(message = "Distance must be greater than 0")
-            Double distance
+            Double distance,
+
+            @RequestParam(required = false)
+            InfrastructureType type
     ) {
         return infrastructureService
-                .findNearbyInfrastructure(latitude, longitude, distance);
+                .findNearbyInfrastructure(latitude, longitude, distance, type);
     }
 
     // GET BY ID

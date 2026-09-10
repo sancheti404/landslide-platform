@@ -23,10 +23,12 @@ public interface InfrastructureRepository
                 )::geography,
                 :distance
             )
+            AND (:type IS NULL OR i.type = :type)
             """, nativeQuery = true)
     List<Infrastructure> findNearbyInfrastructure(
             @Param("latitude") Double latitude,
             @Param("longitude") Double longitude,
-            @Param("distance") Double distance
+            @Param("distance") Double distance,
+            @Param("type") String type
     );
 }

@@ -52,16 +52,15 @@ venv/
 *.pkl
 *.joblib
 datasets/
-data/
 
-# ML raw datasets
+
+# ML datasets
 ml/data/raw/*
 !ml/data/raw/.gitkeep
 
 ml/data/external/*
 !ml/data/external/.gitkeep
 
-# Processed datasets
 ml/data/processed/*
 !ml/data/processed/.gitkeep
 

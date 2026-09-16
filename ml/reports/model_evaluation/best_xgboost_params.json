@@ -1,0 +1,41 @@
+{
+  "best_parameters": {
+    "subsample": 1.0,
+    "reg_lambda": 0.01,
+    "reg_alpha": 0.0001,
+    "n_estimators": 200,
+    "min_child_weight": 2,
+    "max_depth": 7,
+    "learning_rate": 0.2,
+    "gamma": 0.5,
+    "colsample_bytree": 0.9
+  },
+  "best_cv_roc_auc": 0.9527603081211844,
+  "n_iter": 50,
+  "cv_folds": 5,
+  "random_state": 42,
+  "optimization_metric": "roc_auc",
+  "training_samples": 8836,
+  "test_samples": 2210,
+  "feature_count": 19,
+  "timestamp": "2026-09-16T03:17:50.215764+00:00",
+  "cv_performance": {
+    "mean_accuracy": 0.8833193771174397,
+    "std_accuracy": 0.0071419609297317735,
+    "mean_precision": 0.8592353376493153,
+    "std_precision": 0.00905756676309934,
+    "mean_recall": 0.9169314297720133,
+    "std_recall": 0.005180567367449392,
+    "mean_f1": 0.8871313378148595,
+    "std_f1": 0.00661445874968512,
+    "mean_roc_auc": 0.9527603081211844,
+    "std_roc_auc": 0.0037514073666084003
+  },
+  "test_performance": {
+    "accuracy": 0.8733031674208145,
+    "precision": 0.8463476070528967,
+    "recall": 0.9122171945701357,
+    "f1": 0.8780487804878049,
+    "roc_auc": 0.9455580352572633
+  }
+}

@@ -168,6 +168,65 @@ class TestMLInferenceService(unittest.TestCase):
                 self.assertEqual(len(overlap), 0, f"Critical Data Leakage: {len(overlap)} test IDs in lookup!")
         print("  [PASS] Zero test samples in runtime training lookups")
 
+    def test_08_envelope_boundary_cases(self):
+        """
+        Tests A through J for authoritative geospatial operational envelope and runtime coverage.
+        """
+        # Test A — Valid interior coordinate
+        res_a = self.client.post("/risk/assess", json={"latitude": 30.529505, "longitude": 79.085957, "timestamp": "2023-07-15"})
+        self.assertEqual(res_a.status_code, 200)
+        self.assertEqual(res_a.json()["status"], "success")
+
+        # Test B — Discovered bug coordinate: Lat 29.580286 (valid), Lon 82.808874 (invalid > 81.30)
+        res_b = self.client.post("/risk/assess", json={"latitude": 29.580286, "longitude": 82.808874, "timestamp": "2023-07-15"})
+        self.assertEqual(res_b.status_code, 400)
+        data_b = res_b.json()
+        self.assertEqual(data_b["error_code"], "UNSUPPORTED_LOCATION")
+        self.assertTrue("outside" in data_b["message"].lower() or "operational" in data_b["message"].lower())
+
+        # Test C — Longitude exactly at lower boundary 77.40
+        res_c = self.client.post("/risk/assess", json={"latitude": 30.0, "longitude": 77.40, "timestamp": "2023-07-15"})
+        if res_c.status_code == 400:
+            self.assertIn("coverage", res_c.json()["message"].lower())
+
+        # Test D — Longitude exactly at upper boundary 81.30
+        res_d = self.client.post("/risk/assess", json={"latitude": 30.0, "longitude": 81.30, "timestamp": "2023-07-15"})
+        if res_d.status_code == 400:
+            self.assertIn("coverage", res_d.json()["message"].lower())
+
+        # Test E — Longitude just outside upper boundary 81.300001 -> REJECT
+        res_e = self.client.post("/risk/assess", json={"latitude": 30.0, "longitude": 81.300001, "timestamp": "2023-07-15"})
+        self.assertEqual(res_e.status_code, 400)
+        self.assertEqual(res_e.json()["error_code"], "UNSUPPORTED_LOCATION")
+
+        # Test F — Latitude exactly at lower boundary 28.50
+        res_f = self.client.post("/risk/assess", json={"latitude": 28.50, "longitude": 79.0, "timestamp": "2023-07-15"})
+        if res_f.status_code == 400:
+            self.assertIn("coverage", res_f.json()["message"].lower())
+
+        # Test G — Latitude exactly at upper boundary 31.60
+        res_g = self.client.post("/risk/assess", json={"latitude": 31.60, "longitude": 79.0, "timestamp": "2023-07-15"})
+        if res_g.status_code == 400:
+            self.assertIn("coverage", res_g.json()["message"].lower())
+
+        # Test H — Latitude just outside upper boundary 31.600001 -> REJECT
+        res_h = self.client.post("/risk/assess", json={"latitude": 31.600001, "longitude": 79.0, "timestamp": "2023-07-15"})
+        self.assertEqual(res_h.status_code, 400)
+        self.assertEqual(res_h.json()["error_code"], "UNSUPPORTED_LOCATION")
+
+        # Test I — Far outside 25.0, 90.0 -> REJECT
+        res_i = self.client.post("/risk/assess", json={"latitude": 25.0, "longitude": 90.0, "timestamp": "2023-07-15"})
+        self.assertEqual(res_i.status_code, 400)
+        self.assertEqual(res_i.json()["error_code"], "UNSUPPORTED_LOCATION")
+
+        # Test J — Valid envelope but insufficient runtime training-data coverage -> REJECT UNSUPPORTED_LOCATION
+        res_j = self.client.post("/risk/assess", json={"latitude": 28.51, "longitude": 77.41, "timestamp": "2023-07-15"})
+        self.assertEqual(res_j.status_code, 400)
+        data_j = res_j.json()
+        self.assertEqual(data_j["error_code"], "UNSUPPORTED_LOCATION")
+        self.assertIn("coverage", data_j["message"].lower())
+        print("  [PASS] Operational envelope boundary cases Tests A through J verified")
+
 
 if __name__ == "__main__":
     unittest.main()

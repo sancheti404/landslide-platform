@@ -8,13 +8,13 @@ import jakarta.validation.constraints.NotNull;
 public class RiskAssessmentRequest {
 
     @NotNull(message = "Latitude is required")
-    @DecimalMin(value = "28.0", message = "Latitude must be within Uttarakhand region (>= 28.0)")
-    @DecimalMax(value = "32.0", message = "Latitude must be within Uttarakhand region (<= 32.0)")
+    @DecimalMin(value = "28.50", message = "Latitude must be within Uttarakhand operational envelope (>= 28.50)")
+    @DecimalMax(value = "31.60", message = "Latitude must be within Uttarakhand operational envelope (<= 31.60)")
     private Double latitude;
 
     @NotNull(message = "Longitude is required")
-    @DecimalMin(value = "77.0", message = "Longitude must be within Uttarakhand region (>= 77.0)")
-    @DecimalMax(value = "82.0", message = "Longitude must be within Uttarakhand region (<= 82.0)")
+    @DecimalMin(value = "77.40", message = "Longitude must be within Uttarakhand operational envelope (>= 77.40)")
+    @DecimalMax(value = "81.30", message = "Longitude must be within Uttarakhand operational envelope (<= 81.30)")
     private Double longitude;
 
     @NotBlank(message = "Timestamp is required (YYYY-MM-DD or ISO-8601)")

@@ -73,7 +73,9 @@ class HealthResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Structured error payload for client safety."""
-    status: str
+    status: str = "error"
     error_code: str
     message: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     details: Optional[Dict[str, Any]] = None

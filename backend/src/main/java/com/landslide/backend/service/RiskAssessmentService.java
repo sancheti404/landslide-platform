@@ -22,20 +22,26 @@ public class RiskAssessmentService {
     private final MlInferenceClient mlInferenceClient;
     private final RiskZoneRepository riskZoneRepository;
     private final InfrastructureService infrastructureService;
+    private final com.landslide.backend.validation.UttarakhandGeoValidator geoValidator;
 
     public RiskAssessmentService(
             MlInferenceClient mlInferenceClient,
             RiskZoneRepository riskZoneRepository,
-            InfrastructureService infrastructureService
+            InfrastructureService infrastructureService,
+            com.landslide.backend.validation.UttarakhandGeoValidator geoValidator
     ) {
         this.mlInferenceClient = mlInferenceClient;
         this.riskZoneRepository = riskZoneRepository;
         this.infrastructureService = infrastructureService;
+        this.geoValidator = geoValidator;
     }
 
     public RiskAssessmentResponse assessLandslideRisk(RiskAssessmentRequest request) {
         log.info("Processing operational landslide risk assessment for ({}, {}) at {}",
                 request.getLatitude(), request.getLongitude(), request.getTimestamp());
+
+        // 0. Explicit Geographic Operational Envelope Validation
+        geoValidator.validateOperationalEnvelope(request.getLatitude(), request.getLongitude());
 
         // 1. Invoke Python Multimodal ML Inference Service
         RiskAssessmentResponse response = mlInferenceClient.assessRisk(request);

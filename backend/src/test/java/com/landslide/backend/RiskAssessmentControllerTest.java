@@ -76,8 +76,19 @@ class RiskAssessmentControllerTest {
 
     @Test
     void testAssessLandslideRisk_InvalidCoordinates() throws Exception {
-        // Out-of-bounds latitude (< 28.0)
+        // Out-of-bounds latitude (< 28.50)
         RiskAssessmentRequest request = new RiskAssessmentRequest(25.0, 79.0859, "2023-07-15");
+
+        mockMvc.perform(post("/api/risk/assess")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testAssessLandslideRisk_DiscoveredBugInvalidLongitude() throws Exception {
+        // Discovered bug coordinate: Lat 29.580286 (valid), Lon 82.808874 (invalid > 81.30)
+        RiskAssessmentRequest request = new RiskAssessmentRequest(29.580286, 82.808874, "2023-07-15");
 
         mockMvc.perform(post("/api/risk/assess")
                         .contentType(MediaType.APPLICATION_JSON)

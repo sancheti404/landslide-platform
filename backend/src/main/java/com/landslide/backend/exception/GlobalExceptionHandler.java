@@ -76,6 +76,32 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    @ExceptionHandler(UnsupportedLocationException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedLocation(
+            UnsupportedLocationException exception
+    ) {
+        Map<String, String> details = new HashMap<>();
+        details.put("error_code", exception.getErrorCode());
+        if (exception.getLatitude() != null) {
+            details.put("latitude", String.valueOf(exception.getLatitude()));
+        }
+        if (exception.getLongitude() != null) {
+            details.put("longitude", String.valueOf(exception.getLongitude()));
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "UNSUPPORTED_LOCATION",
+                exception.getMessage(),
+                details
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(MlServiceException.class)
     public ResponseEntity<ErrorResponse> handleMlServiceException(
             MlServiceException exception

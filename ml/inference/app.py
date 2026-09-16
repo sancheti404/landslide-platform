@@ -71,12 +71,12 @@ app.add_middleware(
 async def value_error_handler(request: Request, exc: ValueError):
     """Catches domain validation errors and out-of-bounds geographic requests."""
     msg = str(exc)
-    code = "UNSUPPORTED_LOCATION" if "outside" in msg.lower() else "INVALID_REQUEST"
+    code = "UNSUPPORTED_LOCATION" if ("outside" in msg.lower() or "coverage" in msg.lower()) else "INVALID_REQUEST"
     logger.warning("Validation rejected [%s]: %s", code, msg)
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content=ErrorResponse(
-            status="unsupported_location" if code == "UNSUPPORTED_LOCATION" else "error",
+            status="error",
             error_code=code,
             message=msg,
         ).model_dump(),
@@ -123,6 +123,23 @@ async def assess_landslide_risk(request: RiskAssessmentRequest):
       - CHIRPS Causal Antecedent Rainfall Trigger Score
       - Operational Integrated Risk Score & Risk Level
     """
+    # 1. Authoritative Operational Geospatial Envelope Validation
+    if not (settings.MIN_LAT <= request.latitude <= settings.MAX_LAT and settings.MIN_LON <= request.longitude <= settings.MAX_LON):
+        logger.warning(
+            "Rejected coordinate (%.6f, %.6f) outside Uttarakhand operational envelope [%.2f–%.2f°N, %.2f–%.2f°E]",
+            request.latitude, request.longitude, settings.MIN_LAT, settings.MAX_LAT, settings.MIN_LON, settings.MAX_LON
+        )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=ErrorResponse(
+                status="error",
+                error_code="UNSUPPORTED_LOCATION",
+                message="Selected coordinate is outside supported Uttarakhand operational coverage.",
+                latitude=request.latitude,
+                longitude=request.longitude,
+            ).model_dump(),
+        )
+
     t0 = time.time()
     result = fusion_service.assess_risk(
         latitude=request.latitude,

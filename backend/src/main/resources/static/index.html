@@ -328,10 +328,7 @@
       padding: 0.5rem;
     }
 
-    /* Custom Leaflet Dark Style */
-    .leaflet-tile {
-      filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-    }
+    /* Leaflet Popup Style */
     .leaflet-popup-content-wrapper {
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(12px);
@@ -342,6 +339,59 @@
     }
     .leaflet-popup-tip {
       background: rgba(15, 23, 42, 0.95);
+    }
+    .leaflet-control-layers {
+      background: rgba(15, 23, 42, 0.92) !important;
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border) !important;
+      border-radius: 8px !important;
+      color: #f8fafc !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    }
+    .leaflet-control-layers-expanded {
+      background: rgba(15, 23, 42, 0.95) !important;
+    }
+    .leaflet-control-layers label {
+      color: #f8fafc !important;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.25rem;
+    }
+    .unsupported-banner {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      border-radius: 10px;
+      padding: 0.9rem;
+      margin-bottom: 0.5rem;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .unsupported-banner .banner-header {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #ef4444;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    .unsupported-banner .banner-body {
+      font-size: 0.76rem;
+      color: #fca5a5;
+      line-height: 1.45;
+    }
+    .unsupported-banner .banner-body strong {
+      color: #fff;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -406,6 +456,20 @@
           <div class="chip" onclick="setPreset(30.400000, 79.330000, 'Chamoli Slope')">Chamoli Slope</div>
           <div class="chip" onclick="setPreset(29.380000, 79.460000, 'Nainital Ridge')">Nainital Ridge</div>
           <div class="chip" onclick="setPreset(30.100000, 78.290000, 'Rishikesh Foothills')">Rishikesh</div>
+        </div>
+      </div>
+
+      <!-- Unsupported Location Banner -->
+      <div id="unsupported-banner" class="unsupported-banner" style="display: none;">
+        <div class="banner-header">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span>UNSUPPORTED LOCATION</span>
+        </div>
+        <div class="banner-body" id="unsupported-banner-body">
+          Selected coordinate is outside supported Uttarakhand operational coverage.<br>
+          <strong>No risk assessment was performed.</strong>
         </div>
       </div>
 
@@ -538,19 +602,82 @@
     // 1. Initialize Leaflet GIS Map over Uttarakhand
     const map = L.map('map', {
       zoomControl: true,
-      attributionControl: false
+      attributionControl: true
     }).setView([30.3165, 78.9500], 8);
 
-    // Dark Basemap tiles (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd',
+    // High-Resolution True-Color Satellite Imagery (Esri World Imagery) - No API Key Required
+    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: '&copy; Esri &mdash; Satellite Imagery'
+    });
+
+    // Detailed Topographic Terrain with Elevation Contours (OpenTopoMap) - No API Key Required
+    const openTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      maxZoom: 17,
+      attribution: 'Map data &copy; OpenStreetMap contributors, SRTM'
+    });
+
+    // Standard OpenStreetMap - No API Key Required
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    });
+
+    // Add Satellite as default active base layer
+    esriSatellite.addTo(map);
+
+    // Layer switcher control
+    const baseMaps = {
+      "🛰️ Satellite Imagery (Esri)": esriSatellite,
+      "🏔️ Topographic Terrain (OpenTopo)": openTopo,
+      "🗺️ OpenStreetMap": osmStandard
+    };
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
+    // Add Uttarakhand Operational Geospatial Envelope [28.50-31.60°N, 77.40-81.30°E]
+    const UK_ENVELOPE = {
+      minLat: 28.50,
+      maxLat: 31.60,
+      minLon: 77.40,
+      maxLon: 81.30
+    };
+
+    const ukBounds = [[UK_ENVELOPE.minLat, UK_ENVELOPE.minLon], [UK_ENVELOPE.maxLat, UK_ENVELOPE.maxLon]];
+    const ukEnvelopeRect = L.rectangle(ukBounds, {
+      color: '#38bdf8',
+      weight: 1.5,
+      dashArray: '5, 8',
+      fillColor: '#0284c7',
+      fillOpacity: 0.05
     }).addTo(map);
+    ukEnvelopeRect.bindTooltip("Uttarakhand Operational Risk Envelope (28.50–31.60°N, 77.40–81.30°E)", {
+      sticky: true
+    });
 
     let activeMarker = null;
 
+    function isWithinEnvelope(lat, lon) {
+      if (isNaN(lat) || isNaN(lon)) return false;
+      return lat >= UK_ENVELOPE.minLat && lat <= UK_ENVELOPE.maxLat &&
+             lon >= UK_ENVELOPE.minLon && lon <= UK_ENVELOPE.maxLon;
+    }
+
     // Set initial marker
-    setMarker(30.529505, 79.085957, "Kedarnath High Risk Zone");
+    setMarker(30.529505, 79.085957, "Kedarnath High Risk Zone", true);
+
+    // Input listeners for manual coordinate typing
+    document.getElementById('input-lat').addEventListener('input', validateCurrentInputs);
+    document.getElementById('input-lon').addEventListener('input', validateCurrentInputs);
+
+    function validateCurrentInputs() {
+      const lat = parseFloat(document.getElementById('input-lat').value);
+      const lon = parseFloat(document.getElementById('input-lon').value);
+      if (!isWithinEnvelope(lat, lon)) {
+        showUnsupportedLocation(isNaN(lat) ? 0 : lat, isNaN(lon) ? 0 : lon);
+      } else {
+        hideUnsupportedLocation();
+      }
+    }
 
     // Click on map to place pin and set inputs
     map.on('click', function(e) {
@@ -558,16 +685,91 @@
       const lon = parseFloat(e.latlng.lng.toFixed(6));
       document.getElementById('input-lat').value = lat;
       document.getElementById('input-lon').value = lon;
-      setMarker(lat, lon, `Selected: ${lat}, ${lon}`);
+
+      if (!isWithinEnvelope(lat, lon)) {
+        setMarker(lat, lon, `⚠️ UNSUPPORTED LOCATION`, false);
+        showUnsupportedLocation(lat, lon);
+      } else {
+        hideUnsupportedLocation();
+        setMarker(lat, lon, `Selected: ${lat}, ${lon}`, true);
+      }
     });
 
-    function setMarker(lat, lon, popupText) {
+    function showUnsupportedLocation(lat, lon, customMsg) {
+      const banner = document.getElementById('unsupported-banner');
+      const body = document.getElementById('unsupported-banner-body');
+      banner.style.display = 'block';
+      body.innerHTML = customMsg || `
+        Selected coordinate: <strong>${lat.toFixed(6)}, ${lon.toFixed(6)}</strong><br>
+        This location is outside the supported Uttarakhand operational coverage [${UK_ENVELOPE.minLat}–${UK_ENVELOPE.maxLat}°N, ${UK_ENVELOPE.minLon}–${UK_ENVELOPE.maxLon}°E].<br>
+        <span style="color:#f87171; font-weight:600;">No risk assessment was performed.</span>
+      `;
+
+      // Clear / Invalidate all stale assessment results
+      clearAssessmentResults();
+
+      const btn = document.getElementById('btn-assess');
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.innerHTML = `⚠️ Unsupported Coordinate (Blocked)`;
+    }
+
+    function hideUnsupportedLocation() {
+      const banner = document.getElementById('unsupported-banner');
+      banner.style.display = 'none';
+      const btn = document.getElementById('btn-assess');
+      btn.disabled = false;
+      btn.style.opacity = '1.0';
+      btn.innerHTML = `
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"></path>
+        </svg>
+        Assess Multimodal Landslide Risk
+      `;
+    }
+
+    function clearAssessmentResults() {
+      document.getElementById('res-score').innerText = '—';
+      document.getElementById('res-score').style.color = 'var(--text-muted)';
+      const badge = document.getElementById('res-level-badge');
+      badge.innerText = 'UNSUPPORTED LOCATION';
+      badge.style.background = 'rgba(239, 68, 68, 0.15)';
+      badge.style.color = '#f87171';
+      badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+
+      document.getElementById('res-telemetry').innerText = 'Assessment blocked: coordinate outside Uttarakhand operational envelope.';
+
+      document.getElementById('res-xgb-val').innerText = '—';
+      document.getElementById('res-xgb-bar').style.width = '0%';
+
+      document.getElementById('res-swin-val').innerText = '—';
+      document.getElementById('res-swin-bar').style.width = '0%';
+
+      document.getElementById('res-fusion-val').innerText = '—';
+      document.getElementById('res-fusion-bar').style.width = '0%';
+
+      document.getElementById('res-rain-score').innerText = '—';
+      document.getElementById('res-rain-bar').style.width = '0%';
+      document.getElementById('res-rain-trigger').innerText = 'NO DATA';
+
+      document.getElementById('res-r3d').innerText = '—';
+      document.getElementById('res-r7d').innerText = '—';
+      document.getElementById('res-r14d').innerText = '—';
+      document.getElementById('res-r30d').innerText = '—';
+
+      document.getElementById('res-zone-name').innerText = 'Outside Coverage';
+      document.getElementById('res-zone-level').innerText = 'NONE';
+      document.getElementById('res-infra-hosp').innerText = '0';
+      document.getElementById('res-infra-shelter').innerText = '0';
+    }
+
+    function setMarker(lat, lon, popupText, isValid = true) {
       if (activeMarker) {
         map.removeLayer(activeMarker);
       }
       activeMarker = L.circleMarker([lat, lon], {
         radius: 9,
-        fillColor: "#ef4444",
+        fillColor: isValid ? "#ef4444" : "#64748b",
         color: "#ffffff",
         weight: 2,
         opacity: 1,
@@ -580,8 +782,9 @@
     function setPreset(lat, lon, name) {
       document.getElementById('input-lat').value = lat;
       document.getElementById('input-lon').value = lon;
+      hideUnsupportedLocation();
       map.flyTo([lat, lon], 10, { duration: 1 });
-      setMarker(lat, lon, name);
+      setMarker(lat, lon, name, true);
       executeAssessment();
     }
 
@@ -590,6 +793,12 @@
       const lon = parseFloat(document.getElementById('input-lon').value);
       const timestamp = document.getElementById('input-timestamp').value;
 
+      // 1. Client-Side Envelope Guard (Ux Pre-Check)
+      if (!isWithinEnvelope(lat, lon)) {
+        showUnsupportedLocation(lat, lon);
+        return;
+      }
+
       const btn = document.getElementById('btn-assess');
       btn.disabled = true;
       btn.innerHTML = `Evaluating Multimodal Pipeline...`;
@@ -597,7 +806,7 @@
       const t0 = performance.now();
 
       try {
-        // Query Spring Boot API Gateway
+        // 2. Query Spring Boot API Gateway
         const response = await fetch('/api/risk/assess', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -614,7 +823,18 @@
 
         if (!response.ok) {
           const err = await response.json();
-          alert(`Assessment Error: ${err.message || response.statusText}`);
+          const errCode = err.error || err.error_code || "";
+          const errMsg = err.message || response.statusText;
+          if (errCode === "UNSUPPORTED_LOCATION" || response.status === 400) {
+            showUnsupportedLocation(lat, lon, `
+              Selected coordinate: <strong>${lat.toFixed(6)}, ${lon.toFixed(6)}</strong><br>
+              ${errMsg}<br>
+              <span style="color:#f87171; font-weight:600;">No risk assessment was performed.</span>
+            `);
+          } else {
+            clearAssessmentResults();
+            alert(`Assessment Error: ${errMsg}`);
+          }
           return;
         }
 
@@ -622,15 +842,18 @@
         renderResults(data, elapsed);
 
       } catch (err) {
+        clearAssessmentResults();
         alert(`Network Error connecting to Spring Boot backend: ${err.message}`);
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = `
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"></path>
-          </svg>
-          Assess Multimodal Landslide Risk
-        `;
+        if (isWithinEnvelope(lat, lon)) {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"></path>
+            </svg>
+            Assess Multimodal Landslide Risk
+          `;
+        }
       }
     }
 
@@ -685,6 +908,9 @@
       document.getElementById('res-infra-hosp').innerText = data.nearby_hospitals_count ?? 0;
       document.getElementById('res-infra-shelter').innerText = data.nearby_shelters_count ?? 0;
     }
+
+    // Auto-execute initial assessment for Kedarnath to populate live verified values
+    executeAssessment();
   </script>
 </body>
 </html>

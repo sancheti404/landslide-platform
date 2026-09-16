@@ -158,3 +158,66 @@ def test_no_test_samples_in_lookup():
             lookup_ids = set(lookup_df["sample_id"].unique())
             overlap = lookup_ids.intersection(test_ids)
             assert len(overlap) == 0, f"Critical Data Leakage: {len(overlap)} test IDs in lookup!"
+
+
+def test_envelope_boundary_cases(client):
+    """
+    Tests A through J for authoritative geospatial operational envelope and runtime coverage.
+    """
+    # Test A — Valid interior coordinate
+    res_a = client.post("/risk/assess", json={"latitude": 30.529505, "longitude": 79.085957, "timestamp": "2023-07-15"})
+    assert res_a.status_code == 200
+    assert res_a.json()["status"] == "success"
+
+    # Test B — Discovered bug coordinate: Lat 29.580286 (valid), Lon 82.808874 (invalid > 81.30)
+    res_b = client.post("/risk/assess", json={"latitude": 29.580286, "longitude": 82.808874, "timestamp": "2023-07-15"})
+    assert res_b.status_code == 400
+    data_b = res_b.json()
+    assert data_b["error_code"] == "UNSUPPORTED_LOCATION"
+    assert "outside" in data_b["message"].lower() or "operational" in data_b["message"].lower()
+
+    # Test C — Longitude exactly at lower boundary 77.40
+    res_c = client.post("/risk/assess", json={"latitude": 30.0, "longitude": 77.40, "timestamp": "2023-07-15"})
+    # Envelope check must pass; it may only fail on runtime coverage
+    if res_c.status_code == 400:
+        assert "coverage" in res_c.json()["message"].lower()
+
+    # Test D — Longitude exactly at upper boundary 81.30
+    res_d = client.post("/risk/assess", json={"latitude": 30.0, "longitude": 81.30, "timestamp": "2023-07-15"})
+    if res_d.status_code == 400:
+        assert "coverage" in res_d.json()["message"].lower()
+
+    # Test E — Longitude just outside upper boundary 81.300001 -> REJECT
+    res_e = client.post("/risk/assess", json={"latitude": 30.0, "longitude": 81.300001, "timestamp": "2023-07-15"})
+    assert res_e.status_code == 400
+    assert res_e.json()["error_code"] == "UNSUPPORTED_LOCATION"
+    assert "outside" in res_e.json()["message"].lower()
+
+    # Test F — Latitude exactly at lower boundary 28.50
+    res_f = client.post("/risk/assess", json={"latitude": 28.50, "longitude": 79.0, "timestamp": "2023-07-15"})
+    if res_f.status_code == 400:
+        assert "coverage" in res_f.json()["message"].lower()
+
+    # Test G — Latitude exactly at upper boundary 31.60
+    res_g = client.post("/risk/assess", json={"latitude": 31.60, "longitude": 79.0, "timestamp": "2023-07-15"})
+    if res_g.status_code == 400:
+        assert "coverage" in res_g.json()["message"].lower()
+
+    # Test H — Latitude just outside upper boundary 31.600001 -> REJECT
+    res_h = client.post("/risk/assess", json={"latitude": 31.600001, "longitude": 79.0, "timestamp": "2023-07-15"})
+    assert res_h.status_code == 400
+    assert res_h.json()["error_code"] == "UNSUPPORTED_LOCATION"
+    assert "outside" in res_h.json()["message"].lower()
+
+    # Test I — Far outside 25.0, 90.0 -> REJECT
+    res_i = client.post("/risk/assess", json={"latitude": 25.0, "longitude": 90.0, "timestamp": "2023-07-15"})
+    assert res_i.status_code == 400
+    assert res_i.json()["error_code"] == "UNSUPPORTED_LOCATION"
+
+    # Test J — Valid envelope but insufficient runtime training-data coverage -> REJECT UNSUPPORTED_LOCATION
+    res_j = client.post("/risk/assess", json={"latitude": 28.51, "longitude": 77.41, "timestamp": "2023-07-15"})
+    assert res_j.status_code == 400
+    data_j = res_j.json()
+    assert data_j["error_code"] == "UNSUPPORTED_LOCATION"
+    assert "coverage" in data_j["message"].lower()
+

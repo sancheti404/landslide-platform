@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uttarakhand Landslide Intelligence Platform — End-to-End Operational Risk</title>
+  
+  <!-- Leaflet GIS Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --risk-low: #10b981;
+      --risk-med: #f59e0b;
+      --risk-high: #f97316;
+      --risk-crit: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+    }
+    .title-group h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .title-group p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.8rem;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      height: calc(100vh - 65px);
+      position: relative;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+    }
+
+    .sidebar {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border-left: 1px solid var(--card-border);
+      padding: 1.25rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      z-index: 500;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+    .input-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .input-group input, .input-group select {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.45rem 0.6rem;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .btn-assess {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .btn-assess:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+    }
+    .btn-assess:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.7rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .chip:hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      border-color: var(--accent-blue);
+    }
+
+    /* Risk Score Gauge */
+    .gauge-container {
+      text-align: center;
+      padding: 0.75rem 0;
+    }
+    .gauge-score {
+      font-size: 2.75rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+    .risk-badge {
+      display: inline-block;
+      padding: 0.3rem 0.9rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Signal Breakdown Cards */
+    .signal-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .signal-label {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .signal-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+    .prog-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+    }
+    .prog-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .rainfall-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .rain-cell {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.4rem 0.2rem;
+    }
+    .rain-cell .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #38bdf8;
+    }
+    .rain-cell .lbl {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .spatial-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+    }
+    .spatial-item {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+    }
+    .spatial-item span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+    }
+    .spatial-item strong {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #f1f5f9;
+    }
+
+    .disclaimer-box {
+      font-size: 0.68rem;
+      color: #64748b;
+      line-height: 1.4;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+      padding: 0.5rem;
+    }
+
+    /* Custom Leaflet Dark Style */
+    .leaflet-tile {
+      filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+    }
+    .leaflet-popup-content-wrapper {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+    .leaflet-popup-tip {
+      background: rgba(15, 23, 42, 0.95);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <div class="logo-badge">UK-LIP</div>
+      <div class="title-group">
+        <h1>Uttarakhand Landslide Intelligence Platform</h1>
+        <p>End-to-End Multimodal AI & PostGIS Hazard Integration (Step 42)</p>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-pill">
+        <div class="pulse-dot"></div>
+        <span>FASTAPI + SPRING BOOT + POSTGIS ACTIVE</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- GIS Map Container -->
+    <div id="map"></div>
+
+    <!-- Right Control & Assessment Sidebar -->
+    <div class="sidebar">
+      
+      <!-- Query Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span>Target Coordinates</span>
+          <span style="font-size:0.7rem; font-family:'JetBrains Mono'; color:#38bdf8;">CLICK MAP TO SET</span>
+        </div>
+        
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Latitude (°N)</label>
+            <input type="number" id="input-lat" step="0.000001" value="30.529505" />
+          </div>
+          <div class="input-group">
+            <label>Longitude (°E)</label>
+            <input type="number" id="input-lon" step="0.000001" value="79.085957" />
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:0.6rem;">
+          <label>Assessment Timestamp</label>
+          <input type="date" id="input-timestamp" value="2023-07-15" />
+        </div>
+
+        <button class="btn-assess" id="btn-assess" onclick="executeAssessment()">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"></path>
+          </svg>
+          Assess Multimodal Landslide Risk
+        </button>
+
+        <div class="preset-chips">
+          <span style="font-size:0.7rem; color:var(--text-muted); width:100%;">Sample Locations:</span>
+          <div class="chip" onclick="setPreset(30.529505, 79.085957, 'Kedarnath Basin')">Kedarnath Basin</div>
+          <div class="chip" onclick="setPreset(30.400000, 79.330000, 'Chamoli Slope')">Chamoli Slope</div>
+          <div class="chip" onclick="setPreset(29.380000, 79.460000, 'Nainital Ridge')">Nainital Ridge</div>
+          <div class="chip" onclick="setPreset(30.100000, 78.290000, 'Rishikesh Foothills')">Rishikesh</div>
+        </div>
+      </div>
+
+      <!-- Live Assessment Results -->
+      <div id="results-panel" style="display: flex; flex-direction: column; gap: 1rem;">
+        
+        <!-- Risk Gauge -->
+        <div class="card" style="text-align: center;">
+          <div class="card-title" style="justify-content: center;">Operational Landslide Risk Score</div>
+          <div class="gauge-container">
+            <div class="gauge-score" id="res-score" style="color: var(--risk-crit);">1.000</div>
+            <div class="risk-badge" id="res-level-badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">
+              CRITICAL HAZARD
+            </div>
+          </div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;" id="res-telemetry">
+            Latency: 492ms | Backend: Spring Boot -> FastAPI
+          </div>
+        </div>
+
+        <!-- Component Signals Breakdown -->
+        <div class="card">
+          <div class="card-title">AI Branch Decomposition</div>
+
+          <!-- XGBoost -->
+          <div class="signal-row">
+            <span class="signal-label">
+              <span style="color:#60a5fa;">●</span> XGBoost Terrain Susceptibility (w=0.38)
+            </span>
+            <span class="signal-val" id="res-xgb-val">0.8500</span>
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" id="res-xgb-bar" style="width: 85%; background: #3b82f6;"></div>
+          </div>
+
+          <!-- Swin -->
+          <div class="signal-row">
+            <span class="signal-label">
+              <span style="color:#34d399;">●</span> Swin Sentinel-2 Visual Risk (w=0.62)
+            </span>
+            <span class="signal-val" id="res-swin-val">0.9000</span>
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" id="res-swin-bar" style="width: 90%; background: #10b981;"></div>
+          </div>
+
+          <!-- Static-Visual Fusion -->
+          <div class="signal-row" style="margin-top:0.3rem;">
+            <span class="signal-label" style="color:#f8fafc; font-weight:600;">
+              Static-Visual Fusion (0.38 XGB + 0.62 Swin)
+            </span>
+            <span class="signal-val" id="res-fusion-val" style="color:#38bdf8;">0.8810</span>
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" id="res-fusion-bar" style="width: 88.1%; background: linear-gradient(90deg, #3b82f6, #06b6d4);"></div>
+          </div>
+        </div>
+
+        <!-- Dynamic Antecedent Rainfall -->
+        <div class="card">
+          <div class="card-title">
+            <span>Dynamic Rainfall Trigger</span>
+            <span class="status-pill" id="res-rain-trigger" style="font-size:0.65rem; padding:0.15rem 0.5rem;">SEVERE_TRIGGER</span>
+          </div>
+          
+          <div class="signal-row">
+            <span class="signal-label">Antecedent Trigger Score (S_rain)</span>
+            <span class="signal-val" id="res-rain-score" style="color:#38bdf8;">0.7339</span>
+          </div>
+          <div class="prog-bar">
+            <div class="prog-fill" id="res-rain-bar" style="width: 73.4%; background: #06b6d4;"></div>
+          </div>
+
+          <div class="rainfall-grid">
+            <div class="rain-cell">
+              <div class="val" id="res-r3d">77.4</div>
+              <div class="lbl">3-Day mm</div>
+            </div>
+            <div class="rain-cell">
+              <div class="val" id="res-r7d">242.4</div>
+              <div class="lbl">7-Day mm</div>
+            </div>
+            <div class="rain-cell">
+              <div class="val" id="res-r14d">284.4</div>
+              <div class="lbl">14-Day mm</div>
+            </div>
+            <div class="rain-cell">
+              <div class="val" id="res-r30d">415.6</div>
+              <div class="lbl">30-Day mm</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PostGIS Spatial Context -->
+        <div class="card">
+          <div class="card-title">PostGIS Spatial Context</div>
+          <div class="spatial-grid">
+            <div class="spatial-item">
+              <span>Mapped Risk Zone</span>
+              <strong id="res-zone-name">Kedarnath Valley</strong>
+            </div>
+            <div class="spatial-item">
+              <span>Zone Threat Level</span>
+              <strong id="res-zone-level" style="color:#f87171;">CRITICAL</strong>
+            </div>
+            <div class="spatial-item">
+              <span>Hospitals (5km)</span>
+              <strong id="res-infra-hosp">2</strong>
+            </div>
+            <div class="spatial-item">
+              <span>Emergency Shelters</span>
+              <strong id="res-infra-shelter">4</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer-box">
+          * Methodology Note: The operational score is a decision-support heuristic, not a calibrated statistical probability. The static-visual ML fusion (XGBoost + Swin) is benchmarked independently from causal dynamic rainfall triggering.
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    // 1. Initialize Leaflet GIS Map over Uttarakhand
+    const map = L.map('map', {
+      zoomControl: true,
+      attributionControl: false
+    }).setView([30.3165, 78.9500], 8);
+
+    // Dark Basemap tiles (CartoDB Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18,
+      subdomains: 'abcd',
+    }).addTo(map);
+
+    let activeMarker = null;
+
+    // Set initial marker
+    setMarker(30.529505, 79.085957, "Kedarnath High Risk Zone");
+
+    // Click on map to place pin and set inputs
+    map.on('click', function(e) {
+      const lat = parseFloat(e.latlng.lat.toFixed(6));
+      const lon = parseFloat(e.latlng.lng.toFixed(6));
+      document.getElementById('input-lat').value = lat;
+      document.getElementById('input-lon').value = lon;
+      setMarker(lat, lon, `Selected: ${lat}, ${lon}`);
+    });
+
+    function setMarker(lat, lon, popupText) {
+      if (activeMarker) {
+        map.removeLayer(activeMarker);
+      }
+      activeMarker = L.circleMarker([lat, lon], {
+        radius: 9,
+        fillColor: "#ef4444",
+        color: "#ffffff",
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.85
+      }).addTo(map);
+
+      activeMarker.bindPopup(`<b>${popupText}</b><br>Lat: ${lat}<br>Lon: ${lon}`).openPopup();
+    }
+
+    function setPreset(lat, lon, name) {
+      document.getElementById('input-lat').value = lat;
+      document.getElementById('input-lon').value = lon;
+      map.flyTo([lat, lon], 10, { duration: 1 });
+      setMarker(lat, lon, name);
+      executeAssessment();
+    }
+
+    async function executeAssessment() {
+      const lat = parseFloat(document.getElementById('input-lat').value);
+      const lon = parseFloat(document.getElementById('input-lon').value);
+      const timestamp = document.getElementById('input-timestamp').value;
+
+      const btn = document.getElementById('btn-assess');
+      btn.disabled = true;
+      btn.innerHTML = `Evaluating Multimodal Pipeline...`;
+
+      const t0 = performance.now();
+
+      try {
+        // Query Spring Boot API Gateway
+        const response = await fetch('/api/risk/assess', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            latitude: lat,
+            longitude: lon,
+            timestamp: timestamp,
+            rainfallWeight: 0.50,
+            combinationMode: "multiplicative"
+          })
+        });
+
+        const elapsed = (performance.now() - t0).toFixed(0);
+
+        if (!response.ok) {
+          const err = await response.json();
+          alert(`Assessment Error: ${err.message || response.statusText}`);
+          return;
+        }
+
+        const data = await response.json();
+        renderResults(data, elapsed);
+
+      } catch (err) {
+        alert(`Network Error connecting to Spring Boot backend: ${err.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"></path>
+          </svg>
+          Assess Multimodal Landslide Risk
+        `;
+      }
+    }
+
+    function renderResults(data, elapsedMs) {
+      // Score & Badge
+      const score = data.operational_landslide_risk_score;
+      const scoreEl = document.getElementById('res-score');
+      scoreEl.innerText = score.toFixed(4);
+
+      const badge = document.getElementById('res-level-badge');
+      badge.innerText = `${data.risk_level} RISK`;
+
+      let color = "#10b981";
+      if (data.risk_level === "CRITICAL") color = "#ef4444";
+      else if (data.risk_level === "HIGH") color = "#f97316";
+      else if (data.risk_level === "MEDIUM") color = "#f59e0b";
+
+      scoreEl.style.color = color;
+      badge.style.background = `${color}25`;
+      badge.style.color = color;
+      badge.style.borderColor = `${color}60`;
+
+      if (activeMarker) {
+        activeMarker.setStyle({ fillColor: color });
+      }
+
+      document.getElementById('res-telemetry').innerText = `Round-trip Latency: ${elapsedMs}ms | Version: ${data.model_version}`;
+
+      // AI Signals
+      document.getElementById('res-xgb-val').innerText = data.xgboost_probability.toFixed(4);
+      document.getElementById('res-xgb-bar').style.width = `${(data.xgboost_probability * 100).toFixed(1)}%`;
+
+      document.getElementById('res-swin-val').innerText = data.swin_probability.toFixed(4);
+      document.getElementById('res-swin-bar').style.width = `${(data.swin_probability * 100).toFixed(1)}%`;
+
+      document.getElementById('res-fusion-val').innerText = data.static_visual_fusion_score.toFixed(4);
+      document.getElementById('res-fusion-bar').style.width = `${(data.static_visual_fusion_score * 100).toFixed(1)}%`;
+
+      // Rainfall
+      document.getElementById('res-rain-score').innerText = data.dynamic_rainfall_trigger_score.toFixed(4);
+      document.getElementById('res-rain-bar').style.width = `${(data.dynamic_rainfall_trigger_score * 100).toFixed(1)}%`;
+      document.getElementById('res-rain-trigger').innerText = data.trigger_indicator;
+
+      document.getElementById('res-r3d').innerText = data.rainfall_3d_mm.toFixed(1);
+      document.getElementById('res-r7d').innerText = data.rainfall_7d_mm.toFixed(1);
+      document.getElementById('res-r14d').innerText = data.rainfall_14d_mm.toFixed(1);
+      document.getElementById('res-r30d').innerText = data.rainfall_30d_mm.toFixed(1);
+
+      // PostGIS
+      document.getElementById('res-zone-name').innerText = data.intersecting_risk_zone_name || "Unzoned Slope";
+      document.getElementById('res-zone-level').innerText = data.intersecting_risk_zone_level || "NONE";
+      document.getElementById('res-infra-hosp').innerText = data.nearby_hospitals_count ?? 0;
+      document.getElementById('res-infra-shelter').innerText = data.nearby_shelters_count ?? 0;
+    }
+  </script>
+</body>
+</html>

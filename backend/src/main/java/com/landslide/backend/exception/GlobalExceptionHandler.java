@@ -75,4 +75,23 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(errorResponse);
     }
+
+    @ExceptionHandler(MlServiceException.class)
+    public ResponseEntity<ErrorResponse> handleMlServiceException(
+            MlServiceException exception
+    ) {
+        HttpStatus status = exception.getStatusCode() == 400 ? HttpStatus.BAD_REQUEST : HttpStatus.BAD_GATEWAY;
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                exception.getMessage(),
+                null
+        );
+
+        return ResponseEntity
+                .status(status)
+                .body(errorResponse);
+    }
 }
+

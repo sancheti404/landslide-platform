@@ -1,0 +1,4 @@
+comparison,source_samples,target_samples,overlapping_footprints (<1.28km),overlap_percentage (%),min_distance_m,median_distance_m,mean_distance_m,p25_distance_m,p75_distance_m
+Val -> Nearest Train,1768,7068,1008,57.01,0.0,1058.82,1269.7,389.43,1862.02
+Test -> Nearest Train,2210,7068,1339,60.59,0.0,980.64,1191.48,393.85,1807.05
+Test -> Nearest Train+Val,2210,8836,1469,66.47,0.0,844.61,1039.04,313.77,1602.37

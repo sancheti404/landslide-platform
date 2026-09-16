@@ -13,9 +13,9 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/risk")
-@CrossOrigin(origins = "*")
 @Tag(name = "Risk Assessment", description = "Endpoints for multimodal landslide risk evaluation, ML static-visual fusion, dynamic rainfall integration, and PostGIS enrichment")
 public class RiskAssessmentController {
+
 
     private final RiskAssessmentService riskAssessmentService;
 
@@ -29,11 +29,22 @@ public class RiskAssessmentController {
             description = "Evaluates multimodal landslide risk at a coordinate and timestamp. Combines XGBoost terrain susceptibility, Swin Sentinel-2 optical risk, static-visual fusion (0.38/0.62), dynamic CHIRPS rainfall triggering, and PostGIS spatial risk zones."
     )
     public ResponseEntity<RiskAssessmentResponse> assessLandslideRisk(
-            @Valid @RequestBody RiskAssessmentRequest request
+            @Valid @RequestBody RiskAssessmentRequest request,
+            @RequestHeader(value = "X-Request-ID", required = false) String requestId
     ) {
-        RiskAssessmentResponse response = riskAssessmentService.assessLandslideRisk(request);
-        return ResponseEntity.ok(response);
+        String effectiveRequestId = (requestId != null && !requestId.isBlank())
+                ? requestId
+                : java.util.UUID.randomUUID().toString();
+
+        RiskAssessmentResponse response = (requestId != null && !requestId.isBlank())
+                ? riskAssessmentService.assessLandslideRisk(request, effectiveRequestId)
+                : riskAssessmentService.assessLandslideRisk(request);
+
+        return ResponseEntity.ok()
+                .header("X-Request-ID", effectiveRequestId)
+                .body(response);
     }
+
 
     @GetMapping("/ml-health")
     @Operation(
@@ -44,4 +55,5 @@ public class RiskAssessmentController {
         Map<String, Object> health = riskAssessmentService.checkMlHealth();
         return ResponseEntity.ok(health);
     }
+
 }

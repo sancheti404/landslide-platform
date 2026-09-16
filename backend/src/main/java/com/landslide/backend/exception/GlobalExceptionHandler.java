@@ -106,18 +106,30 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMlServiceException(
             MlServiceException exception
     ) {
-        HttpStatus status = exception.getStatusCode() == 400 ? HttpStatus.BAD_REQUEST : HttpStatus.BAD_GATEWAY;
+        HttpStatus status;
+        if (exception.getStatusCode() == 400) {
+            status = HttpStatus.BAD_REQUEST;
+        } else if (exception.getStatusCode() == 503) {
+            status = HttpStatus.SERVICE_UNAVAILABLE;
+        } else {
+            status = HttpStatus.BAD_GATEWAY;
+        }
+
+        Map<String, String> details = new HashMap<>();
+        details.put("error_code", exception.getErrorCode());
+
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
                 status.value(),
-                status.getReasonPhrase(),
+                exception.getErrorCode(),
                 exception.getMessage(),
-                null
+                details
         );
 
         return ResponseEntity
                 .status(status)
                 .body(errorResponse);
     }
+
 }
 

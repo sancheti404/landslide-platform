@@ -36,17 +36,27 @@ class FusionService:
         w_rain = settings.DEFAULT_RAINFALL_WEIGHT if rainfall_weight is None else float(rainfall_weight)
         mode = (combination_mode or settings.DEFAULT_COMBINATION_MODE).lower()
 
+        import time
+
+        t_start = time.perf_counter()
+
         # 1. Branch 1: Static Terrain / Environmental Susceptibility (XGBoost)
+        t_xgb_0 = time.perf_counter()
         p_xgb, raw_features = feature_service.extract_features_and_predict(latitude, longitude)
+        xgb_ms = (time.perf_counter() - t_xgb_0) * 1000.0
 
         # 2. Branch 2: Satellite Visual Evidence Risk (Swin Transformer)
+        t_swin_0 = time.perf_counter()
         p_swin, patch_path = swin_service.predict_visual_risk(latitude, longitude)
+        swin_ms = (time.perf_counter() - t_swin_0) * 1000.0
 
         # 3. Static-Visual Late Fusion (Frozen 0.38 / 0.62)
         static_visual_score = float(np.clip(self.w_xgb * p_xgb + self.w_swin * p_swin, 0.0, 1.0))
 
         # 4. Dynamic Hydrometeorological Triggering (CHIRPS Causal Rainfall Engine)
+        t_rain_0 = time.perf_counter()
         rain_result = container.rainfall_engine.get_dynamic_rainfall_risk(latitude, longitude, timestamp)
+        rain_ms = (time.perf_counter() - t_rain_0) * 1000.0
         s_rain = float(rain_result.get("dynamic_rainfall_trigger_score", 0.0))
         trigger_ind = str(rain_result.get("trigger_indicator", "LOW_STRESS"))
 
@@ -71,6 +81,7 @@ class FusionService:
             risk_level = "CRITICAL"
 
         max_daily = float(rain_result.get("maximum_daily_rainfall", rain_result.get("maximum_daily_rainfall_mm", 0.0)))
+        total_ms = (time.perf_counter() - t_start) * 1000.0
 
         return {
             "latitude": round(latitude, 6),
@@ -91,6 +102,12 @@ class FusionService:
             "risk_level": risk_level,
             "model_version": settings.APP_VERSION,
             "status": "success",
+            "timings_ms": {
+                "xgb": round(xgb_ms, 2),
+                "swin": round(swin_ms, 2),
+                "rain": round(rain_ms, 2),
+                "total": round(total_ms, 2),
+            },
         }
 
 

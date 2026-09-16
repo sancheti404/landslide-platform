@@ -16,10 +16,12 @@ IMPORTANT METHODOLOGICAL PRINCIPLES:
    prolonged antecedent saturation (14d, 30d), and climatological anomalies.
 """
 
+from collections import OrderedDict
 from datetime import datetime, timedelta
 import math
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+import threading
+from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 
@@ -139,6 +141,10 @@ class DynamicRainfallEngine:
         self.ee_project = ee_project
         self._ee_initialized = False
         self._grid_cache = None
+        self._memory_cache: OrderedDict = OrderedDict()
+        self._series_cache: OrderedDict = OrderedDict()
+        self._cache_lock = threading.Lock()
+        self._max_cache_size = 4096
 
         if self.cache_dir and (self.cache_dir / "uttarakhand_grid_rainfall_cache.parquet").exists():
             try:
@@ -158,7 +164,14 @@ class DynamicRainfallEngine:
     def query_point_chirps_series(self, latitude: float, longitude: float, end_date_str: str) -> List[float]:
         """
         Queries exactly 30 antecedent daily CHIRPS rainfall observations ending at end_date_str.
+        Thread-safe caching ensures repeated queries for identical coordinate and date avoid network roundtrips.
         """
+        series_key = (round(float(latitude), 4), round(float(longitude), 4), end_date_str)
+        with self._cache_lock:
+            if series_key in self._series_cache:
+                self._series_cache.move_to_end(series_key)
+                return list(self._series_cache[series_key])
+
         self._ensure_ee()
         import ee
 
@@ -192,6 +205,11 @@ class DynamicRainfallEngine:
         elif len(values) > 30:
             values = values[-30:]
 
+        with self._cache_lock:
+            if len(self._series_cache) >= self._max_cache_size:
+                self._series_cache.popitem(last=False)
+            self._series_cache[series_key] = list(values)
+
         return values
 
     def get_dynamic_rainfall_risk(
@@ -218,6 +236,16 @@ class DynamicRainfallEngine:
         # Extract date from timestamp
         date_str = timestamp.split("T")[0].split(" ")[0]
 
+        # Thread-safe in-memory cache lookup
+        cache_key = (round(float(latitude), 4), round(float(longitude), 4), date_str)
+        with self._cache_lock:
+            if cache_key in self._memory_cache:
+                self._memory_cache.move_to_end(cache_key)
+                cached = self._memory_cache[cache_key].copy()
+                if sample_id is not None:
+                    cached["sample_id"] = sample_id
+                return cached
+
         # Fetch daily precipitation series
         daily_series = self.query_point_chirps_series(latitude, longitude, date_str)
 
@@ -234,6 +262,13 @@ class DynamicRainfallEngine:
             "swin_probability": None,
             **result
         }
+
+        # Store in LRU cache
+        with self._cache_lock:
+            if len(self._memory_cache) >= self._max_cache_size:
+                self._memory_cache.popitem(last=False)
+            self._memory_cache[cache_key] = output.copy()
+
         return output
 
 

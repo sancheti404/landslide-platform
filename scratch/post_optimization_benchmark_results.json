@@ -1,0 +1,51 @@
+{
+  "fastapi_warm_post_opt": {
+    "min": 11.736199998267693,
+    "max": 12.632499998289859,
+    "mean": 12.205399999947986,
+    "median": 12.26890000179992,
+    "std_dev": 0.35996899204989224
+  },
+  "spring_boot_warm_post_opt": {
+    "min": 43.89259999879869,
+    "max": 728.9869999985967,
+    "mean": 187.49948000040604,
+    "median": 59.07120000119903,
+    "std_dev": 302.78342194393673
+  },
+  "baseline_comparison": {
+    "fastapi_warm_mean_baseline_ms": 3566.5045399997325,
+    "fastapi_warm_mean_post_opt_ms": 12.205399999947986,
+    "fastapi_speedup_factor": 292.2,
+    "spring_boot_mean_baseline_ms": 1139.8756800008414,
+    "spring_boot_mean_post_opt_ms": 187.49948000040604,
+    "spring_boot_speedup_factor": 6.1
+  },
+  "sample_response": {
+    "dynamic_rainfall_trigger_score": 0.7339,
+    "intersecting_risk_zone_id": null,
+    "intersecting_risk_zone_level": null,
+    "intersecting_risk_zone_name": null,
+    "latitude": 30.529505,
+    "longitude": 79.085957,
+    "maximum_daily_rainfall_mm": 77.37,
+    "model_version": "1.0.0",
+    "nearby_hospitals_count": 0,
+    "nearby_police_stations_count": 0,
+    "nearby_roads_count": 0,
+    "nearby_shelters_count": 0,
+    "operational_landslide_risk_score": 1.0,
+    "rainfall_14d_mm": 284.41,
+    "rainfall_30d_mm": 415.58,
+    "rainfall_3d_mm": 77.37,
+    "rainfall_7d_mm": 242.44,
+    "rainfall_anomaly": 1.026,
+    "risk_level": "CRITICAL",
+    "static_visual_fusion_score": 0.969468,
+    "status": "success",
+    "swin_probability": 0.999899,
+    "timestamp": "2023-07-15",
+    "trigger_indicator": "SEVERE_TRIGGER",
+    "xgboost_probability": 0.919816
+  }
+}

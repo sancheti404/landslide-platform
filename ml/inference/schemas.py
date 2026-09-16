@@ -59,6 +59,7 @@ class RiskAssessmentResponse(BaseModel):
     # Operational Metadata
     model_version: str
     status: str = "success"
+    timings_ms: Optional[Dict[str, float]] = None
 
 
 class HealthResponse(BaseModel):

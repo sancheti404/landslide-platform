@@ -3,7 +3,9 @@ Terrain Feature Extraction and XGBoost Inference Service.
 Uttarakhand Landslide Intelligence Platform.
 """
 
+from collections import OrderedDict
 import logging
+import threading
 from typing import Dict, Tuple
 import numpy as np
 import pandas as pd
@@ -15,10 +17,12 @@ logger = logging.getLogger("ml.inference.feature_service")
 
 
 class FeatureService:
-    """Extracts terrain features and computes XGBoost susceptibility probability."""
+    """Extracts terrain features and computes XGBoost susceptibility probability with LRU caching."""
 
     def __init__(self):
-        pass
+        self._feature_cache: OrderedDict = OrderedDict()
+        self._cache_lock = threading.Lock()
+        self._max_cache_size = 2048
 
     def extract_features_and_predict(self, latitude: float, longitude: float) -> Tuple[float, Dict[str, float]]:
         """
@@ -37,6 +41,13 @@ class FeatureService:
                 f"Coordinates ({latitude:.4f}, {longitude:.4f}) are outside the Uttarakhand "
                 f"operational envelope [{settings.MIN_LAT}-{settings.MAX_LAT}, {settings.MIN_LON}-{settings.MAX_LON}]."
             )
+
+        cache_key = (round(float(latitude), 4), round(float(longitude), 4))
+        with self._cache_lock:
+            if cache_key in self._feature_cache:
+                self._feature_cache.move_to_end(cache_key)
+                prob, cached_features = self._feature_cache[cache_key]
+                return prob, cached_features.copy()
 
         # 2. Query Nearest Training Sample
         nearest_row, dist_deg = container.query_nearest_training_features(latitude, longitude)
@@ -73,7 +84,13 @@ class FeatureService:
         prob = float(container.xgb_model.predict_proba(X_trans)[0, 1])
         prob = float(np.clip(prob, 0.0, 1.0))
 
+        with self._cache_lock:
+            if len(self._feature_cache) >= self._max_cache_size:
+                self._feature_cache.popitem(last=False)
+            self._feature_cache[cache_key] = (prob, raw_features.copy())
+
         return prob, raw_features
 
 
 feature_service = FeatureService()
+

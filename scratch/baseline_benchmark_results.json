@@ -1,0 +1,58 @@
+{
+  "fastapi_health": {
+    "min": 2037.2381000015594,
+    "max": 2076.8129999996745,
+    "mean": 2051.807879999251,
+    "median": 2046.5279999989434,
+    "std_dev": 15.285721868594344
+  },
+  "fastapi_cold_ms": 4040.417399999569,
+  "fastapi_warm": {
+    "min": 2656.452100000024,
+    "max": 5648.511100000178,
+    "mean": 3566.5045399997325,
+    "median": 2786.703400000988,
+    "std_dev": 1291.244231410757
+  },
+  "spring_boot_full": {
+    "min": 651.1338999989675,
+    "max": 1796.6690000030212,
+    "mean": 1139.8756800008414,
+    "median": 1156.263000000763,
+    "std_dev": 459.30250493146116
+  },
+  "postgis": {
+    "min": 12.129200000345008,
+    "max": 35.04660000180593,
+    "mean": 17.329639999661595,
+    "median": 13.060999997833278,
+    "std_dev": 9.917192894487302
+  },
+  "sample_response": {
+    "dynamic_rainfall_trigger_score": 0.7339,
+    "intersecting_risk_zone_id": null,
+    "intersecting_risk_zone_level": null,
+    "intersecting_risk_zone_name": null,
+    "latitude": 30.529505,
+    "longitude": 79.085957,
+    "maximum_daily_rainfall_mm": 77.37,
+    "model_version": "1.0.0",
+    "nearby_hospitals_count": 0,
+    "nearby_police_stations_count": 0,
+    "nearby_roads_count": 0,
+    "nearby_shelters_count": 0,
+    "operational_landslide_risk_score": 1.0,
+    "rainfall_14d_mm": 284.41,
+    "rainfall_30d_mm": 415.58,
+    "rainfall_3d_mm": 77.37,
+    "rainfall_7d_mm": 242.44,
+    "rainfall_anomaly": 1.026,
+    "risk_level": "CRITICAL",
+    "static_visual_fusion_score": 0.969468,
+    "status": "success",
+    "swin_probability": 0.999899,
+    "timestamp": "2023-07-15",
+    "trigger_indicator": "SEVERE_TRIGGER",
+    "xgboost_probability": 0.919816
+  }
+}

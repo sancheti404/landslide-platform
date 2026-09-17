@@ -1,0 +1,70 @@
+/* Uttarakhand Landslide Intelligence Platform (UK-LIP) - Enterprise Design System Theme */
+
+:root {
+  /* Neutral Canvas & Surfaces */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f8fafc;
+  --bg-elevated: #ffffff;
+  
+  /* Restrained Slate Borders & Dividers */
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-focus: #0284c7;
+
+  /* High-Contrast Enterprise Typography */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  /* Primary Brand Accents (Deep Teal / Slate / Ocean Blue) */
+  --brand-primary: #0f766e;
+  --brand-primary-hover: #115e59;
+  --brand-secondary: #0284c7;
+  --brand-secondary-hover: #0369a1;
+  --brand-navy: #1e3a8a;
+  --brand-cyan: #0284c7;
+  --brand-glow: rgba(2, 132, 199, 0.12);
+
+  /* Semantic Operational Risk States */
+  --risk-low: #059669;
+  --risk-low-bg: #ecfdf5;
+  --risk-low-border: #a7f3d0;
+
+  --risk-moderate: #d97706;
+  --risk-moderate-bg: #fffbeb;
+  --risk-moderate-border: #fde68a;
+
+  --risk-high: #ea580c;
+  --risk-high-bg: #fff7ed;
+  --risk-high-border: #fed7aa;
+
+  --risk-critical: #dc2626;
+  --risk-critical-bg: #fef2f2;
+  --risk-critical-border: #fecaca;
+
+  /* Semantic Status */
+  --status-success: #059669;
+  --status-warning: #d97706;
+  --status-danger: #dc2626;
+  --status-info: #0284c7;
+
+  /* Subtle Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+
+  /* Layout Constants */
+  --nav-height: 56px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 68px;
+  --max-content-width: 1440px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+}
+

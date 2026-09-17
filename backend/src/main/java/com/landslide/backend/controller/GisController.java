@@ -217,7 +217,7 @@ public class GisController {
                         "name", "Digital Elevation Model (DEM)",
                         "type", "Raster (GeoTIFF)",
                         "resolution", "30 meters",
-                        "source", "Copernicus GLO-30 / ALOS AW3D30",
+                        "source", "SRTM GL1 30m DEM (NASA/USGS)",
                         "crs", "EPSG:4326 (WGS84)",
                         "status", "Reused existing local processed DEM"
                 ),

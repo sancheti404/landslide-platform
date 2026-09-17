@@ -12,7 +12,7 @@ export default defineConfig({
   root: realRoot,
   plugins: [react()],
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', '@react-google-maps/api'],
+    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'leaflet', 'react-leaflet'],
   },
   server: {
     port: 5173,

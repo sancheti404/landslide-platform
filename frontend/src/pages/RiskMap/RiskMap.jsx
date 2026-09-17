@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleMap } from '../../components/map/GoogleMap';
+import { MapView } from '../../components/map/MapView';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { DemoDataNotice } from '../../components/feedback/DemoDataNotice';
@@ -220,7 +220,7 @@ export function RiskMap() {
 
         {/* CENTER: Large Dominant Interactive Map */}
         <main className="risk-map-map-col" aria-label="Interactive Map Canvas">
-          <GoogleMap
+          <MapView
             height="100%"
             selectedLocation={selectedCoord}
             onLocationSelect={handleLocationSelect}

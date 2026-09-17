@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getNearbyInfrastructure } from '../../services/infrastructureApi';
 import { useGeolocation } from '../../hooks/useGeolocation';
-import { GoogleMap } from '../../components/map/GoogleMap';
+import { MapView } from '../../components/map/MapView';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -335,7 +335,7 @@ export function Emergency() {
           </div>
 
           <div style={{ height: '360px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
-            <GoogleMap
+            <MapView
               height="100%"
               showLegend={false}
               showLayers={false}

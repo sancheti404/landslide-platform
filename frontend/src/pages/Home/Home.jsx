@@ -4,7 +4,7 @@ import { ROUTES } from '../../constants/routes';
 import { getMlHealth } from '../../services/riskApi';
 import { getDistrictSummary } from '../../services/gisApi';
 import { Button } from '../../components/common/Button';
-import { GoogleMap } from '../../components/map/GoogleMap';
+import { MapView } from '../../components/map/MapView';
 import {
   Map,
   Crosshair,
@@ -175,7 +175,7 @@ export function Home() {
             border: '1px solid var(--border-subtle)',
           }}
         >
-          <GoogleMap
+          <MapView
             height="100%"
             showLegend={false}
             showLayers={false}

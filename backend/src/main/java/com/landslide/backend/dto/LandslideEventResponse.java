@@ -19,6 +19,15 @@ public class LandslideEventResponse {
     private String riskZoneName;
     private RiskLevel riskLevel;
 
+    private String slideNo;
+    private String district;
+    private String slideName;
+    private String materialInvolved;
+    private String movementType;
+    private String history;
+
+    public LandslideEventResponse() {}
+
     public LandslideEventResponse(
             Long id,
             Double latitude,
@@ -32,6 +41,29 @@ public class LandslideEventResponse {
             String riskZoneName,
             RiskLevel riskLevel
     ) {
+        this(id, latitude, longitude, severity, status, source, occurredAt, createdAt,
+                riskZoneId, riskZoneName, riskLevel, null, null, null, null, null, null);
+    }
+
+    public LandslideEventResponse(
+            Long id,
+            Double latitude,
+            Double longitude,
+            String severity,
+            String status,
+            String source,
+            LocalDateTime occurredAt,
+            LocalDateTime createdAt,
+            Long riskZoneId,
+            String riskZoneName,
+            RiskLevel riskLevel,
+            String slideNo,
+            String district,
+            String slideName,
+            String materialInvolved,
+            String movementType,
+            String history
+    ) {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -43,6 +75,12 @@ public class LandslideEventResponse {
         this.riskZoneId = riskZoneId;
         this.riskZoneName = riskZoneName;
         this.riskLevel = riskLevel;
+        this.slideNo = slideNo;
+        this.district = district;
+        this.slideName = slideName;
+        this.materialInvolved = materialInvolved;
+        this.movementType = movementType;
+        this.history = history;
     }
 
     public Long getId() {
@@ -88,4 +126,29 @@ public class LandslideEventResponse {
     public RiskLevel getRiskLevel() {
         return riskLevel;
     }
+
+    public String getSlideNo() {
+        return slideNo;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public String getSlideName() {
+        return slideName;
+    }
+
+    public String getMaterialInvolved() {
+        return materialInvolved;
+    }
+
+    public String getMovementType() {
+        return movementType;
+    }
+
+    public String getHistory() {
+        return history;
+    }
 }
+

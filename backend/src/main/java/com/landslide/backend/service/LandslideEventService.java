@@ -173,6 +173,51 @@ public class LandslideEventService {
         landslideEventRepository.deleteById(id);
     }
 
+    public List<LandslideEventResponse> findHistoricalLandslides(
+            String district,
+            String movementType,
+            Double minLon,
+            Double minLat,
+            Double maxLon,
+            Double maxLat,
+            Integer limit
+    ) {
+        int maxResults = (limit != null && limit > 0 && limit <= 10000) ? limit : 1000;
+        List<LandslideEvent> events;
+
+        if (minLon != null && minLat != null && maxLon != null && maxLat != null) {
+            events = landslideEventRepository.findLandslidesInBoundingBox(minLon, minLat, maxLon, maxLat, maxResults);
+        } else if (district != null && !district.isBlank()) {
+            events = landslideEventRepository.findBySourceAndDistrict("GSI_NLSM", district.trim());
+        } else {
+            events = landslideEventRepository.findBySource("GSI_NLSM");
+        }
+
+        if (movementType != null && !movementType.isBlank()) {
+            String mtLower = movementType.trim().toLowerCase();
+            events = events.stream()
+                    .filter(e -> e.getMovementType() != null && e.getMovementType().toLowerCase().contains(mtLower))
+                    .toList();
+        }
+
+        if (events.size() > maxResults) {
+            events = events.subList(0, maxResults);
+        }
+
+        return events.stream().map(this::mapToResponse).toList();
+    }
+
+    public java.util.Map<String, Long> getDistrictSummary() {
+        List<Object[]> rows = landslideEventRepository.countLandslidesByDistrict("GSI_NLSM");
+        java.util.Map<String, Long> summary = new java.util.LinkedHashMap<>();
+        for (Object[] r : rows) {
+            if (r[0] != null && r[1] != null) {
+                summary.put((String) r[0], ((Number) r[1]).longValue());
+            }
+        }
+        return summary;
+    }
+
     private LandslideEventResponse mapToResponse(
             LandslideEvent event
     ) {
@@ -197,7 +242,14 @@ public class LandslideEventService {
                 event.getCreatedAt(),
                 riskZoneId,
                 riskZoneName,
-                riskLevel
+                riskLevel,
+                event.getSlideNo(),
+                event.getDistrict(),
+                event.getSlideName(),
+                event.getMaterialInvolved(),
+                event.getMovementType(),
+                event.getHistory()
         );
     }
 }
+

@@ -30,6 +30,24 @@ public class LandslideEvent {
 
     private String source;
 
+    @Column(name = "slide_no", length = 100)
+    private String slideNo;
+
+    @Column(name = "district", length = 100)
+    private String district;
+
+    @Column(name = "slide_name", length = 255)
+    private String slideName;
+
+    @Column(name = "material_involved", length = 100)
+    private String materialInvolved;
+
+    @Column(name = "movement_type", length = 100)
+    private String movementType;
+
+    @Column(name = "history", length = 100)
+    private String history;
+
     @ManyToOne
     @JoinColumn(name = "risk_zone_id")
     private RiskZone riskZone;
@@ -43,6 +61,7 @@ public class LandslideEvent {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
 
     // Getters and Setters
 
@@ -98,9 +117,58 @@ public class LandslideEvent {
         this.source = source;
     }
 
+    public String getSlideNo() {
+        return slideNo;
+    }
+
+    public void setSlideNo(String slideNo) {
+        this.slideNo = slideNo;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getSlideName() {
+        return slideName;
+    }
+
+    public void setSlideName(String slideName) {
+        this.slideName = slideName;
+    }
+
+    public String getMaterialInvolved() {
+        return materialInvolved;
+    }
+
+    public void setMaterialInvolved(String materialInvolved) {
+        this.materialInvolved = materialInvolved;
+    }
+
+    public String getMovementType() {
+        return movementType;
+    }
+
+    public void setMovementType(String movementType) {
+        this.movementType = movementType;
+    }
+
+    public String getHistory() {
+        return history;
+    }
+
+    public void setHistory(String history) {
+        this.history = history;
+    }
+
     public RiskZone getRiskZone() {
         return riskZone;
     }
+
 
     public void setRiskZone(RiskZone riskZone) {
         this.riskZone = riskZone;

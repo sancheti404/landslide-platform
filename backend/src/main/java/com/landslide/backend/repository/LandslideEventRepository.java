@@ -47,5 +47,31 @@ public interface LandslideEventRepository
 
     @Query("SELECT COUNT(l) FROM LandslideEvent l WHERE l.riskZone IS NULL")
     long countUnassignedLandslides();
+
+    long countBySource(String source);
+
+    List<LandslideEvent> findBySource(String source);
+
+    List<LandslideEvent> findByDistrict(String district);
+
+    List<LandslideEvent> findBySourceAndDistrict(String source, String district);
+
+    @Query(value = """
+            SELECT *
+            FROM landslide_events le
+            WHERE le.location && ST_MakeEnvelope(:minLon, :minLat, :maxLon, :maxLat, 4326)
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<LandslideEvent> findLandslidesInBoundingBox(
+            @Param("minLon") Double minLon,
+            @Param("minLat") Double minLat,
+            @Param("maxLon") Double maxLon,
+            @Param("maxLat") Double maxLat,
+            @Param("limit") int limit
+    );
+
+    @Query("SELECT l.district, COUNT(l) FROM LandslideEvent l WHERE l.source = :source AND l.district IS NOT NULL GROUP BY l.district ORDER BY COUNT(l) DESC")
+    List<Object[]> countLandslidesByDistrict(@Param("source") String source);
 }
+
 

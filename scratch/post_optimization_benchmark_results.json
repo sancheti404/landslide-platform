@@ -1,25 +1,25 @@
 {
   "fastapi_warm_post_opt": {
-    "min": 11.736199998267693,
-    "max": 12.632499998289859,
-    "mean": 12.205399999947986,
-    "median": 12.26890000179992,
-    "std_dev": 0.35996899204989224
+    "min": 9.940600008121692,
+    "max": 13.24620000377763,
+    "mean": 12.263960001291707,
+    "median": 12.762099999235943,
+    "std_dev": 1.327943487346409
   },
   "spring_boot_warm_post_opt": {
-    "min": 43.89259999879869,
-    "max": 728.9869999985967,
-    "mean": 187.49948000040604,
-    "median": 59.07120000119903,
-    "std_dev": 302.78342194393673
+    "min": 42.656100005842745,
+    "max": 826.3213000027463,
+    "mean": 209.49770000297576,
+    "median": 58.658200010540895,
+    "std_dev": 344.90173671224727
   },
   "baseline_comparison": {
     "fastapi_warm_mean_baseline_ms": 3566.5045399997325,
-    "fastapi_warm_mean_post_opt_ms": 12.205399999947986,
-    "fastapi_speedup_factor": 292.2,
+    "fastapi_warm_mean_post_opt_ms": 12.263960001291707,
+    "fastapi_speedup_factor": 290.8,
     "spring_boot_mean_baseline_ms": 1139.8756800008414,
-    "spring_boot_mean_post_opt_ms": 187.49948000040604,
-    "spring_boot_speedup_factor": 6.1
+    "spring_boot_mean_post_opt_ms": 209.49770000297576,
+    "spring_boot_speedup_factor": 5.4
   },
   "sample_response": {
     "dynamic_rainfall_trigger_score": 0.7339,
